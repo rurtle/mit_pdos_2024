@@ -195,6 +195,7 @@ UPROGS=\
 	$U/_wc\
 	$U/_sleep\
 	$U/_pingpong\
+	$U/_find\
 	$U/_zombie\
 
 
