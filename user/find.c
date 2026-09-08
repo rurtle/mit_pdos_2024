@@ -4,7 +4,6 @@
 #include "kernel/fs.h"
 #include "kernel/fcntl.h"
 
-
 char*
 fmtname(char *path)
 {
@@ -20,7 +19,9 @@ fmtname(char *path)
   if(strlen(p) >= DIRSIZ)
     return p;
   memmove(buf, p, strlen(p));
-  memset(buf+strlen(p), ' ', DIRSIZ-strlen(p));
+  buf[strlen(p)] = '\0';
+  printf("Filename: %s\n", buf);
+  // memset(buf+strlen(p), ' ', DIRSIZ-strlen(p));
   return buf;
 }
 
@@ -28,9 +29,9 @@ void
 find(char *path, char *fn)
 {
   char buf[512];
-  // char *p;
+  char *p;
   int fd;
-  // struct dirent de;
+  struct dirent de;
   struct stat st;
 
   if((fd = open(path, O_RDONLY)) < 0){
@@ -47,7 +48,10 @@ find(char *path, char *fn)
   switch(st.type){
   case T_DEVICE:
   case T_FILE:
-    printf("%s %d %d %d\n", fmtname(path), st.type, st.ino, (int) st.size);
+    // Check if ths file matches the filename mentioned
+    p = fmtname(path);
+    if (strcmp(p, fn) == 0)
+      printf("Match found: %s\n", path);
     break;
 
   case T_DIR:
@@ -55,8 +59,7 @@ find(char *path, char *fn)
       printf("ls: path too long\n");
       break;
     }
-    printf("%s %d %d %d\n", fmtname(path), st.type, st.ino, (int) st.size);
-#if 0
+    // printf("%s %d %d %d\n", fmtname(path), st.type, st.ino, (int) st.size);
     strcpy(buf, path);
     p = buf+strlen(buf);
     *p++ = '/';
@@ -69,9 +72,8 @@ find(char *path, char *fn)
         printf("ls: cannot stat %s\n", buf);
         continue;
       }
-      printf("%s %d %d %d\n", fmtname(buf), st.type, st.ino, (int) st.size);
+      // printf("%s %d %d %d\n", fmtname(buf), st.type, st.ino, (int) st.size);
     }
-#endif
     break;
   }
   close(fd);
