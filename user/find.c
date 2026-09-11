@@ -20,7 +20,6 @@ fmtname(char *path)
     return p;
   memmove(buf, p, strlen(p));
   buf[strlen(p)] = '\0';
-  printf("Filename: %s\n", buf);
   // memset(buf+strlen(p), ' ', DIRSIZ-strlen(p));
   return buf;
 }
@@ -51,7 +50,7 @@ find(char *path, char *fn)
     // Check if ths file matches the filename mentioned
     p = fmtname(path);
     if (strcmp(p, fn) == 0)
-      printf("Match found: %s\n", path);
+      printf("%s\n", path);
     break;
 
   case T_DIR:
@@ -66,11 +65,19 @@ find(char *path, char *fn)
     while(read(fd, &de, sizeof(de)) == sizeof(de)){
       if(de.inum == 0)
         continue;
-      memmove(p, de.name, DIRSIZ);
-      p[DIRSIZ] = 0;
-      if(stat(buf, &st) < 0){
-        printf("ls: cannot stat %s\n", buf);
+      // Skip the current (.) and the parent (..) directory
+      else if (strcmp(de.name, ".") == 0 || strcmp(de.name, "..") == 0)
         continue;
+      else {
+        // printf("Dir name: %s\n", de.name);
+        memmove(p, de.name, DIRSIZ);
+        p[DIRSIZ] = 0;
+        if(stat(buf, &st) < 0){
+          printf("ls: cannot stat %s\n", buf);
+          continue;
+        } else {
+          find(buf, fn);
+	}
       }
       // printf("%s %d %d %d\n", fmtname(buf), st.type, st.ino, (int) st.size);
     }
